@@ -1,7 +1,6 @@
 fastapi
 uvicorn[standard]
 python-multipart
-opencv-python-headless
 pymongo
 boto3
 python-dotenv

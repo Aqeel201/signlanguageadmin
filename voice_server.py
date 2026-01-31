@@ -1,5 +1,4 @@
 import os
-import cv2
 import nltk
 import time
 import logging
