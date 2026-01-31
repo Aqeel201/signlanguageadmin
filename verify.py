@@ -1,0 +1,15 @@
+try:
+    import torch; print(f"PyTorch: {torch.__version__}")
+    import yaml; print("YAML: OK")
+    from transformers import AutoTokenizer; print("Transformers: OK")
+    import sacrebleu; print("SacreBLEU: OK")
+    from pose_format import Pose; print("Pose-Format: OK")
+    import numpy; print(f"NumPy: {numpy.__version__}")
+    import PIL; print(f"Pillow: {PIL.__version__}")
+    import portalocker; print(f"Portalocker: {portalocker.__version__}")
+    import torchtext; print(f"TorchText: {torchtext.__version__}")
+    import virtualenv; print(f"Virtualenv: {virtualenv.__version__}")
+    import wrapt; print(f"Wrapt: {wrapt.__version__}")
+    print("All deps loaded successfully!")
+except ImportError as e:
+    print(f"Error: {e}")

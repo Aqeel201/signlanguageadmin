@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+python-multipart
+openai-whisper
+opencv-python-headless
+pymongo
+boto3
+python-dotenv
+nltk
+jinja2
+gunicorn
+moviepy
+SpeechRecognition

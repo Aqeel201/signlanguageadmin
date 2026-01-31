@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoSign Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        dark: { bg: '#0a0f1a', surface: '#111827', card: '#1f2937', border: '#374151' },
+                        light: { bg: '#f8fafc', surface: '#ffffff', card: '#ffffff', border: '#e2e8f0' },
+                        brand: { 500: '#06b6d4', 600: '#0891b2', glow: 'rgba(6,182,212,0.15)' },
+                        accent: { purple: '#a855f7', pink: '#ec4899' }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                        'slide-up': 'slideUp 0.4s ease-out',
+                        'pulse-slow': 'pulse 3s infinite',
+                        'gradient': 'gradient 8s ease infinite'
+                    },
+                    keyframes: {
+                        fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
+                        slideUp: { from: { opacity: '0', transform: 'translateY(20px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+                        gradient: { '0%, 100%': { backgroundPosition: '0% 50%' }, '50%': { backgroundPosition: '100% 50%' } }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .glass-strong {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(30px);
+        }
+
+        .dark .glass {
+            background: rgba(17, 24, 39, 0.7);
+        }
+
+        .gradient-header {
+            background: linear-gradient(-45deg, #06b6d4, #3b82f6, #8b5cf6, #06b6d4);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -15px rgba(6, 182, 212, 0.2);
+        }
+
+        .sidebar-collapsed .sidebar-text {
+            display: none;
+        }
+
+        .sidebar-collapsed aside {
+            width: 80px !important;
+        }
+
+        .sidebar-collapsed main {
+            margin-left: 80px !important;
+        }
+
+        .video-thumb {
+            transition: transform 0.3s;
+        }
+
+        .video-thumb:hover {
+            transform: scale(1.02);
+        }
+
+        input:focus,
+        button:focus {
+            outline: 2px solid #06b6d4;
+            outline-offset: 2px;
+        }
+
+        .drag-over {
+            border-color: #06b6d4 !important;
+            background: rgba(6, 182, 212, 0.1) !important;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #06b6d4, #8b5cf6);
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        .light .skeleton {
+            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+            background-size: 200% 100%;
+        }
+    </style>
+</head>
+
+<body class="bg-light-bg text-slate-900 dark:bg-dark-bg dark:text-white min-h-screen font-sans">
+
+    <!-- Theme Toggle -->
+    <button onclick="toggleTheme()" aria-label="Toggle theme"
+        class="fixed top-6 right-6 z-50 p-3 rounded-2xl glass border border-slate-200/50 dark:border-slate-700/50 shadow-xl hover:scale-110 transition-transform focus:ring-2 focus:ring-cyan-500">
+        <i data-lucide="moon" class="w-5 h-5 dark:hidden text-slate-600"></i>
+        <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-yellow-400"></i>
+    </button>
+
+    {% if page == "login" %}
+    <!-- LOGIN PAGE -->
+    <div class="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+        <div class="absolute inset-0 -z-10">
+            <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-[150px]"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-500/20 rounded-full blur-[150px]">
+            </div>
+        </div>
+        <div
+            class="w-full max-w-md glass border border-slate-200/50 dark:border-slate-700/50 rounded-3xl p-10 shadow-2xl animate-fade-in">
+            <div class="text-center mb-10">
+                <div
+                    class="w-20 h-20 mx-auto mb-6 rounded-3xl gradient-header flex items-center justify-center shadow-2xl shadow-cyan-500/30">
+                    <i data-lucide="hand" class="w-10 h-10 text-white"></i>
+                </div>
+                <h1 class="text-4xl font-extrabold tracking-tight">Echo<span
+                        class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Sign</span>
+                </h1>
+                <p class="text-slate-500 dark:text-slate-400 mt-3 font-medium">Administration Portal</p>
+            </div>
+            <form action="/login" method="POST" class="space-y-6">
+                {% if request.query_params.get('error') %}
+                <div
+                    class="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3">
+                    <i data-lucide="alert-circle" class="w-5 h-5"></i> Invalid credentials
+                </div>
+                {% endif %}
+                <div>
+                    <label
+                        class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Username</label>
+                    <input type="text" name="username" required placeholder="admin"
+                        class="w-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl py-4 px-5 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all dark:text-white placeholder:text-slate-400">
+                </div>
+                <div>
+                    <label
+                        class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Password</label>
+                    <input type="password" name="password" required placeholder="••••••••"
+                        class="w-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl py-4 px-5 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all dark:text-white placeholder:text-slate-400">
+                </div>
+                <button type="submit"
+                    class="w-full py-4 gradient-header text-white font-bold rounded-xl shadow-xl shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all transform hover:-translate-y-0.5 focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-slate-900">
+                    Sign In
+                </button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <!-- DASHBOARD LAYOUT -->
+    <div id="app" class="flex min-h-screen">
+        <!-- SIDEBAR -->
+        <aside id="sidebar"
+            class="w-72 bg-white dark:bg-dark-surface border-r border-slate-200 dark:border-slate-800 flex flex-col fixed h-full z-40 transition-all duration-300">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-12 h-12 rounded-2xl gradient-header flex items-center justify-center shadow-lg shadow-cyan-500/20 flex-shrink-0">
+                        <i data-lucide="hand" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div class="sidebar-text">
+                        <h1 class="font-extrabold text-xl leading-tight">EchoSign</h1>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Admin Panel</p>
+                    </div>
+                    <button onclick="toggleSidebar()"
+                        class="ml-auto p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition sidebar-text"
+                        aria-label="Collapse sidebar">
+                        <i data-lucide="panel-left-close" class="w-5 h-5 text-slate-400"></i>
+                    </button>
+                </div>
+            </div>
+            <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+                <button onclick="nav('dashboard')" data-page="dashboard"
+                    class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-sm font-semibold transition-all"
+                    aria-label="Dashboard">
+                    <i data-lucide="layout-grid" class="w-5 h-5 flex-shrink-0"></i><span
+                        class="sidebar-text">Dashboard</span>
+                </button>
+                <button onclick="nav('library')" data-page="library"
+                    class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                    aria-label="Video Library">
+                    <i data-lucide="library" class="w-5 h-5 flex-shrink-0"></i><span class="sidebar-text">Video
+                        Library</span>
+                </button>
+                <button onclick="nav('upload')" data-page="upload"
+                    class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                    aria-label="Upload Video">
+                    <i data-lucide="upload-cloud" class="w-5 h-5 flex-shrink-0"></i><span class="sidebar-text">Upload
+                        Video</span>
+                </button>
+                <button onclick="nav('activity')" data-page="activity"
+                    class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                    aria-label="Activity Log">
+                    <i data-lucide="activity" class="w-5 h-5 flex-shrink-0"></i><span class="sidebar-text">Activity
+                        Log</span>
+                </button>
+                <button onclick="nav('settings')" data-page="settings"
+                    class="nav-item w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                    aria-label="Settings">
+                    <i data-lucide="settings" class="w-5 h-5 flex-shrink-0"></i><span
+                        class="sidebar-text">Settings</span>
+                </button>
+            </nav>
+            <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+                <a href="/logout"
+                    class="flex items-center gap-3 text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 text-sm font-semibold px-4 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                    aria-label="Sign Out">
+                    <i data-lucide="log-out" class="w-5 h-5"></i><span class="sidebar-text">Sign Out</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main id="main-content" class="flex-1 ml-72 transition-all duration-300">
+            <!-- DASHBOARD VIEW -->
+            <div id="view-dashboard" class="view p-8 animate-fade-in">
+                <!-- Header with gradient -->
+                <div class="relative rounded-3xl overflow-hidden mb-8 p-8 gradient-header">
+                    <div class="absolute inset-0 bg-black/20"></div>
+                    <div class="relative z-10">
+                        <h2 class="text-3xl font-extrabold text-white mb-2">Welcome Back! 👋</h2>
+                        <p class="text-white/80">Manage your PSL video dataset and monitor system health.</p>
+                    </div>
+                    <div class="absolute right-8 bottom-0 opacity-20">
+                        <i data-lucide="hand" class="w-32 h-32 text-white"></i>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div
+                        class="glass-strong border border-slate-200/50 dark:border-slate-700/50 p-6 rounded-3xl card-hover">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 flex items-center justify-center">
+                                <i data-lucide="video" class="w-6 h-6 text-cyan-500"></i>
+                            </div>
+                            <span
+                                class="text-xs font-bold px-2 py-1 rounded-lg bg-green-500/10 text-green-500">Active</span>
+                        </div>
+                        <div class="text-4xl font-black text-slate-900 dark:text-white mb-1">{{ stats.approved }}</div>
+                        <div class="text-sm font-medium text-slate-500 dark:text-slate-400">Approved Videos</div>
+                    </div>
+                    <div
+                        class="glass-strong border border-slate-200/50 dark:border-slate-700/50 p-6 rounded-3xl card-hover">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-2xl bg-yellow-500/10 flex items-center justify-center">
+                                <i data-lucide="clock" class="w-6 h-6 text-yellow-500"></i>
+                            </div>
+                            <span
+                                class="text-xs font-bold px-2 py-1 rounded-lg bg-yellow-500/10 text-yellow-500">Review</span>
+                        </div>
+                        <div class="text-4xl font-black text-slate-900 dark:text-white mb-1">{{ stats.pending }}</div>
+                        <div class="text-sm font-medium text-slate-500 dark:text-slate-400">Pending Review</div>
+                    </div>
+                    <div
+                        class="glass-strong border border-slate-200/50 dark:border-slate-700/50 p-6 rounded-3xl card-hover">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                                <i data-lucide="cloud" class="w-6 h-6 text-blue-500"></i>
+                            </div>
+                            <span class="text-xs font-bold px-2 py-1 rounded-lg bg-blue-500/10 text-blue-500">{{
+                                stats.s3 }}</span>
+                        </div>
+                        <div class="text-xl font-bold text-slate-900 dark:text-white mb-1">AWS S3</div>
+                        <div class="text-sm font-medium text-slate-500 dark:text-slate-400">Storage Status</div>
+                    </div>
+                    <div
+                        class="glass-strong border border-slate-200/50 dark:border-slate-700/50 p-6 rounded-3xl card-hover">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center">
+                                <i data-lucide="mic" class="w-6 h-6 text-purple-500"></i>
+                            </div>
+                        </div>
+                        <div class="text-sm font-bold text-slate-900 dark:text-white mb-1 truncate">{{ stats.whisper }}
+                        </div>
+                        <div class="text-sm font-medium text-slate-500 dark:text-slate-400">Voice Engine</div>
+                    </div>
+                </div>
+
+                <!-- Pending Approvals -->
+                <div
+                    class="glass-strong border border-slate-200/50 dark:border-slate-700/50 rounded-3xl overflow-hidden">
+                    <div
+                        class="p-6 border-b border-slate-200/50 dark:border-slate-700/50 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-xl">Pending Approvals</h3>
+                            <p class="text-sm text-slate-500">Videos waiting for your review</p>
+                        </div>
+                        <span class="text-sm font-bold px-4 py-2 rounded-xl bg-yellow-500/10 text-yellow-500">{{
+                            pending_videos|length }} items</span>
+                    </div>
+                    {% if pending_videos %}
+                    <div class="divide-y divide-slate-200/50 dark:divide-slate-700/50 max-h-[500px] overflow-y-auto">
+                        {% for video in pending_videos %}
+                        <div
+                            class="p-6 flex items-center gap-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                            <div class="relative group">
+                                <video src="{{ video.url }}"
+                                    class="w-40 h-24 bg-black rounded-xl object-cover border border-slate-200 dark:border-slate-700"
+                                    preload="metadata"></video>
+                                <div
+                                    class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-xl transition-opacity">
+                                    <button onclick="previewVideo('{{ video.url }}')"
+                                        class="p-2 bg-white/20 rounded-full hover:bg-white/40">
+                                        <i data-lucide="play" class="w-5 h-5 text-white"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-bold text-lg mb-1 truncate">{{ video.filename }}</h4>
+                                <div class="flex gap-4 text-sm text-slate-500 dark:text-slate-400">
+                                    <span class="flex items-center gap-1"><i data-lucide="calendar"
+                                            class="w-4 h-4"></i>{{ video.date }}</span>
+                                    <span class="flex items-center gap-1"><i data-lucide="hard-drive"
+                                            class="w-4 h-4"></i>{{ video.size }}</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <form action="/admin/action" method="POST">
+                                    <input type="hidden" name="key" value="{{ video.key }}">
+                                    <input type="hidden" name="action" value="approve">
+                                    <button
+                                        class="px-5 py-2.5 bg-green-500 text-white rounded-xl font-bold text-sm hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all hover:-translate-y-0.5">Approve</button>
+                                </form>
+                                <form action="/admin/action" method="POST">
+                                    <input type="hidden" name="key" value="{{ video.key }}">
+                                    <input type="hidden" name="action" value="reject">
+                                    <button
+                                        class="px-5 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-red-500 hover:text-white transition-all">Reject</button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="p-16 text-center">
+                        <div
+                            class="w-20 h-20 mx-auto mb-4 rounded-full bg-green-500/10 flex items-center justify-center">
+                            <i data-lucide="check-circle" class="w-10 h-10 text-green-500"></i>
+                        </div>
+                        <p class="text-slate-500 dark:text-slate-400 font-medium">All caught up! No pending videos.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- LIBRARY VIEW -->
+            <div id="view-library" class="view hidden p-8 animate-fade-in">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                    <div>
+                        <h2 class="text-3xl font-extrabold">Video Library</h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-1">Browse and manage approved sign videos</p>
+                    </div>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <div class="relative flex-1 md:w-80">
+                            <i data-lucide="search"
+                                class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                            <input type="text" id="searchInput" onkeyup="filterVideos()" placeholder="Search videos..."
+                                class="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-cyan-500 outline-none">
+                        </div>
+                        <button onclick="nav('upload')"
+                            class="px-5 py-3 gradient-header text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all flex items-center gap-2">
+                            <i data-lucide="plus" class="w-5 h-5"></i><span class="hidden md:inline">Add New</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" id="videoGrid"></div>
+
+                <!-- Load More Button -->
+                <div id="loadMoreContainer" class="text-center mt-8">
+                    <button onclick="loadMoreVideos()" id="loadMoreBtn"
+                        class="px-8 py-3 glass-strong border border-slate-200/50 dark:border-slate-700/50 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-cyan-500 hover:text-white hover:border-cyan-500 transition-all">
+                        <span id="loadMoreText">Load More</span>
+                        <span id="loadMoreSpinner" class="hidden"><i data-lucide="loader-2"
+                                class="w-5 h-5 animate-spin inline"></i></span>
+                    </button>
+                    <p id="videoCountInfo" class="text-sm text-slate-500 mt-3"></p>
+                </div>
+            </div>
+
+            <!-- EDIT VIDEO MODAL -->
+            <div id="editModal"
+                class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm"
+                onclick="closeEditModal(event)">
+                <div class="relative max-w-md w-full mx-4 glass-strong border border-slate-200/50 dark:border-slate-700/50 rounded-3xl p-8"
+                    onclick="event.stopPropagation()">
+                    <button onclick="closeEditModalBtn()"
+                        class="absolute top-4 right-4 text-slate-400 hover:text-white transition">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                    <h3 class="text-xl font-bold mb-6 text-slate-900 dark:text-white">Edit Video Name</h3>
+                    <form id="editForm" action="/admin/edit" method="POST">
+                        <input type="hidden" name="old_key" id="editKey">
+                        <div class="mb-6">
+                            <label
+                                class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Video
+                                Name</label>
+                            <input type="text" name="new_name" id="editName" required
+                                class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-4 px-5 focus:ring-2 focus:ring-cyan-500 outline-none font-medium dark:text-white">
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="button" onclick="closeEditModalBtn()"
+                                class="flex-1 py-3 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition">Cancel</button>
+                            <button type="submit"
+                                class="flex-1 py-3 gradient-header text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 transition">Save
+                                Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- UPLOAD VIEW -->
+            <div id="view-upload" class="view hidden p-8 animate-fade-in">
+                <div class="max-w-2xl mx-auto">
+                    <div class="text-center mb-10">
+                        <div
+                            class="w-24 h-24 gradient-header rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-cyan-500/30">
+                            <i data-lucide="upload-cloud" class="w-12 h-12 text-white"></i>
+                        </div>
+                        <h2 class="text-3xl font-extrabold">Upload New Sign</h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-2">Add a new word to the PSL dictionary</p>
+                    </div>
+                    <form action="/admin/upload" method="POST" enctype="multipart/form-data"
+                        class="glass-strong border border-slate-200/50 dark:border-slate-700/50 p-8 rounded-3xl space-y-6">
+                        <div>
+                            <label
+                                class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Word
+                                or Phrase</label>
+                            <input type="text" name="name" required placeholder="e.g. Welcome, Thank You"
+                                class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-4 px-5 focus:ring-2 focus:ring-cyan-500 outline-none font-medium dark:text-white">
+                        </div>
+                        <div id="dropZone"
+                            class="p-10 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl text-center hover:border-cyan-500 transition-colors cursor-pointer">
+                            <i data-lucide="film" class="w-12 h-12 mx-auto text-slate-400 mb-4"></i>
+                            <p class="font-medium text-slate-600 dark:text-slate-300 mb-2">Drag & drop your video here
+                            </p>
+                            <p class="text-sm text-slate-400">or click to browse (MP4 only)</p>
+                            <input type="file" name="file" accept=".mp4" required class="hidden" id="fileInput">
+                            <div id="fileInfo" class="mt-4 hidden">
+                                <p class="text-cyan-500 font-semibold" id="fileName"></p>
+                            </div>
+                        </div>
+                        <div id="progressContainer" class="hidden">
+                            <div class="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                <div id="progressBar" class="h-full progress-bar rounded-full transition-all"
+                                    style="width: 0%"></div>
+                            </div>
+                            <p class="text-sm text-slate-500 mt-2 text-center" id="progressText">Uploading...</p>
+                        </div>
+                        <button type="submit"
+                            class="w-full py-4 gradient-header text-white font-bold rounded-xl shadow-xl shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all transform hover:-translate-y-0.5">
+                            <span class="flex items-center justify-center gap-2"><i data-lucide="upload"
+                                    class="w-5 h-5"></i> Upload Video</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ACTIVITY LOG VIEW -->
+            <div id="view-activity" class="view hidden p-8 animate-fade-in">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-extrabold">Activity Log</h2>
+                    <p class="text-slate-500 dark:text-slate-400 mt-1">Recent system activities and changes</p>
+                </div>
+                <div
+                    class="glass-strong border border-slate-200/50 dark:border-slate-700/50 rounded-3xl overflow-hidden">
+                    <div class="p-6 text-center text-slate-500">
+                        <i data-lucide="activity" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
+                        <p>Activity log will be populated from backend API</p>
+                        <p class="text-xs mt-2 text-slate-400"><!-- API Hook: GET /api/activity --></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS VIEW -->
+            <div id="view-settings" class="view hidden p-8 animate-fade-in">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-extrabold">Settings</h2>
+                    <p class="text-slate-500 dark:text-slate-400 mt-1">System configuration and environment</p>
+                </div>
+                <div class="max-w-2xl space-y-6">
+                    <div class="glass-strong border border-slate-200/50 dark:border-slate-700/50 p-6 rounded-3xl">
+                        <h3 class="font-bold text-lg mb-4 flex items-center gap-2"><i data-lucide="cloud"
+                                class="w-5 h-5 text-cyan-500"></i> AWS Configuration</h3>
+                        <div class="space-y-4">
+                            <div
+                                class="flex items-center justify-between p-4 bg-slate-100 dark:bg-slate-800 rounded-xl">
+                                <span class="font-medium">AWS_ACCESS_KEY_ID</span>
+                                <span
+                                    class="text-xs px-3 py-1 rounded-full bg-green-500/10 text-green-500 font-bold">Configured</span>
+                            </div>
+                            <div
+                                class="flex items-center justify-between p-4 bg-slate-100 dark:bg-slate-800 rounded-xl">
+                                <span class="font-medium">AWS_SECRET_ACCESS_KEY</span>
+                                <span
+                                    class="text-xs px-3 py-1 rounded-full bg-green-500/10 text-green-500 font-bold">Configured</span>
+                            </div>
+                            <div
+                                class="flex items-center justify-between p-4 bg-slate-100 dark:bg-slate-800 rounded-xl">
+                                <span class="font-medium">S3_BUCKET_NAME</span>
+                                <span
+                                    class="text-xs px-3 py-1 rounded-full bg-green-500/10 text-green-500 font-bold">Configured</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-strong border border-yellow-500/30 bg-yellow-500/5 p-6 rounded-3xl">
+                        <div class="flex items-start gap-4">
+                            <i data-lucide="alert-triangle" class="w-6 h-6 text-yellow-500 flex-shrink-0 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">Environment Notice</h3>
+                                <p class="text-slate-500 dark:text-slate-400 text-sm">Sensitive configuration is managed
+                                    via .env file. Ensure all required variables are set before production deployment.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- VIDEO PREVIEW MODAL -->
+    <div id="videoModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm"
+        onclick="closeModal(event)">
+        <div class="relative max-w-4xl w-full mx-4" onclick="event.stopPropagation()">
+            <button onclick="closeVideoModal()"
+                class="absolute -top-12 right-0 text-white hover:text-cyan-400 transition" aria-label="Close modal">
+                <i data-lucide="x" class="w-8 h-8"></i>
+            </button>
+            <video id="modalVideo" controls class="w-full rounded-2xl shadow-2xl"></video>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    {% if success or request.query_params.get('success') %}
+    <div id="toast"
+        class="fixed bottom-6 right-6 glass-strong border border-green-500/30 rounded-2xl p-4 flex items-center gap-4 animate-slide-up shadow-2xl">
+        <div class="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+            <i data-lucide="check-circle" class="w-5 h-5 text-green-500"></i>
+        </div>
+        <div>
+            <h4 class="font-bold text-slate-900 dark:text-white">Success</h4>
+            <p class="text-sm text-slate-500">{{ success or request.query_params.get('success') }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        lucide.createIcons();
+
+        // Theme
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        }
+        if (localStorage.theme === 'light') document.documentElement.classList.remove('dark');
+        else document.documentElement.classList.add('dark');
+
+        // Sidebar
+        function toggleSidebar() {
+            document.getElementById('app').classList.toggle('sidebar-collapsed');
+        }
+
+        // Navigation
+        function nav(pageId) {
+            document.querySelectorAll('.view').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-' + pageId)?.classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-cyan-500/10', 'text-cyan-500');
+                el.classList.add('text-slate-500', 'dark:text-slate-400');
+            });
+            const btn = document.querySelector(`[data-page="${pageId}"]`);
+            if (btn) {
+                btn.classList.add('bg-cyan-500/10', 'text-cyan-500');
+                btn.classList.remove('text-slate-500', 'dark:text-slate-400');
+            }
+            // Load videos when navigating to library
+            if (pageId === 'library' && allVideos.length === 0) {
+                initVideoLibrary();
+            }
+        }
+        nav('dashboard');
+
+        // ========== VIDEO PAGINATION ==========
+        const VIDEOS_PER_PAGE = 15;
+        let allVideos = [];
+        let displayedCount = 0;
+
+        // Video data from backend (passed via Jinja)
+        const videoData = [
+            {% for video in approved_videos %}
+        { word: "{{ video.word }}", url: "{{ video.url }}", key: "{{ video.key }}" },
+        {% endfor %}
+        ];
+
+        function initVideoLibrary() {
+            allVideos = [...videoData];
+            displayedCount = 0;
+            document.getElementById('videoGrid').innerHTML = '';
+            loadMoreVideos();
+        }
+
+        function loadMoreVideos() {
+            const grid = document.getElementById('videoGrid');
+            const btn = document.getElementById('loadMoreBtn');
+            const spinner = document.getElementById('loadMoreSpinner');
+            const text = document.getElementById('loadMoreText');
+
+            // Show loading
+            spinner.classList.remove('hidden');
+            text.textContent = 'Loading...';
+
+            setTimeout(() => {
+                const nextBatch = allVideos.slice(displayedCount, displayedCount + VIDEOS_PER_PAGE);
+
+                nextBatch.forEach(video => {
+                    grid.innerHTML += createVideoCard(video);
+                });
+
+                displayedCount += nextBatch.length;
+
+                // Update count info
+                document.getElementById('videoCountInfo').textContent =
+                    `Showing ${displayedCount} of ${allVideos.length} videos`;
+
+                // Hide button if all loaded
+                if (displayedCount >= allVideos.length) {
+                    btn.style.display = 'none';
+                } else {
+                    spinner.classList.add('hidden');
+                    text.textContent = `Load More (${allVideos.length - displayedCount} remaining)`;
+                }
+
+                // Reinitialize lucide icons for new elements
+                lucide.createIcons();
+            }, 300);
+        }
+
+        function createVideoCard(video) {
+            return `
+                <div class="video-card group glass-strong border border-slate-200/50 dark:border-slate-700/50 rounded-2xl overflow-hidden video-thumb" data-word="${video.word}">
+                    <div class="aspect-video bg-black relative">
+                        <div class="w-full h-full bg-slate-800 flex items-center justify-center">
+                            <i data-lucide="video" class="w-8 h-8 text-slate-600"></i>
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                            <button onclick="previewVideo('${video.url}')" class="p-3 bg-white/20 backdrop-blur rounded-full hover:bg-white/40 transition">
+                                <i data-lucide="play" class="w-6 h-6 text-white"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-slate-900 dark:text-white capitalize truncate mb-3">${video.word}</h3>
+                        <div class="flex gap-2">
+                            <button onclick="openEditModal('${video.key}', '${video.word}')" class="flex-1 py-2 rounded-lg bg-cyan-500/10 text-cyan-500 text-xs font-bold hover:bg-cyan-500 hover:text-white transition-all flex items-center justify-center gap-1">
+                                <i data-lucide="pencil" class="w-3 h-3"></i> Edit
+                            </button>
+                            <form action="/admin/delete" method="POST" onsubmit="return confirm('Delete this video permanently?')" class="flex-1">
+                                <input type="hidden" name="key" value="${video.key}">
+                                <button class="w-full py-2 rounded-lg bg-red-500/10 text-red-500 text-xs font-bold hover:bg-red-500 hover:text-white transition-all">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Search with pagination
+        function filterVideos() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            if (term === '') {
+                // Reset to paginated view
+                displayedCount = 0;
+                document.getElementById('videoGrid').innerHTML = '';
+                document.getElementById('loadMoreBtn').style.display = 'block';
+                loadMoreVideos();
+                return;
+            }
+            // Filter all videos and show results
+            const filtered = allVideos.filter(v => v.word.toLowerCase().includes(term));
+            const grid = document.getElementById('videoGrid');
+            grid.innerHTML = '';
+            filtered.forEach(video => grid.innerHTML += createVideoCard(video));
+            document.getElementById('loadMoreBtn').style.display = 'none';
+            document.getElementById('videoCountInfo').textContent = `Found ${filtered.length} videos`;
+            lucide.createIcons();
+        }
+
+        // ========== EDIT MODAL ==========
+        function openEditModal(key, name) {
+            document.getElementById('editKey').value = key;
+            document.getElementById('editName').value = name;
+            const modal = document.getElementById('editModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.getElementById('editName').focus();
+        }
+
+        function closeEditModalBtn() {
+            const modal = document.getElementById('editModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function closeEditModal(e) {
+            if (e.target.id === 'editModal') closeEditModalBtn();
+        }
+
+        // ========== VIDEO PREVIEW MODAL ==========
+        function previewVideo(url) {
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('modalVideo');
+            video.src = url;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            video.play();
+        }
+        function closeVideoModal() {
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('modalVideo');
+            video.pause();
+            video.src = '';
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+        function closeModal(e) { if (e.target.id === 'videoModal') closeVideoModal(); }
+
+        // Drag & Drop
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        if (dropZone && fileInput) {
+            dropZone.onclick = () => fileInput.click();
+            dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); };
+            dropZone.ondragleave = () => dropZone.classList.remove('drag-over');
+            dropZone.ondrop = (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    showFileInfo(e.dataTransfer.files[0]);
+                }
+            };
+            fileInput.onchange = () => { if (fileInput.files[0]) showFileInfo(fileInput.files[0]); };
+        }
+        function showFileInfo(file) {
+            document.getElementById('fileInfo').classList.remove('hidden');
+            document.getElementById('fileName').textContent = file.name;
+        }
+
+        // Toast auto-hide
+        setTimeout(() => { const t = document.getElementById('toast'); if (t) t.style.display = 'none'; }, 5000);
+    </script>
+    {% endif %}
+</body>
+
+</html>

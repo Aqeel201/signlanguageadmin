@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: echosign-admin
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn voice_server:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_BUCKET_NAME
+        sync: false
+      - key: AWS_DEFAULT_REGION
+        value: eu-north-1
