@@ -440,6 +440,13 @@ def health():
 
 @app.on_event("startup")
 async def startup():
+    # Download NLTK data for production
+    try:
+        import nltk
+        nltk.download('punkt', quiet=True)
+        nltk.download('punkt_tab', quiet=True)
+    except:
+        pass
     index_s3_files()
 
 if __name__ == "__main__":
