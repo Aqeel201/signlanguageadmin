@@ -1,7 +1,6 @@
 fastapi
 uvicorn[standard]
 python-multipart
-openai-whisper
 opencv-python-headless
 pymongo
 boto3

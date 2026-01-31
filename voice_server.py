@@ -1,4 +1,3 @@
-# voice_server.py – AUTH + EDIT + STATIC + WHISPER + S3
 import os
 import cv2
 import nltk
@@ -17,7 +16,6 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import uvicorn
 from dotenv import load_dotenv
 import boto3
-import whisper
 from nltk.tokenize import word_tokenize
 
 load_dotenv()
@@ -47,31 +45,15 @@ try:
 except Exception as e:
     logger.error(f"S3 Failed: {e}")
 
-# ============ WHISPER & FFMPEG & FALLBACK ============
-whisper_model = None
+# ============ SPEECH FALLBACK (VERCEL LITE) ============
 speech_recognizer = None
 
-def check_ffmpeg():
-    if shutil.which("ffmpeg"):
-        return True
-    return False
-
 try:
-    if check_ffmpeg():
-        whisper_model = whisper.load_model("base")
-        logger.info("Whisper model 'base' loaded")
-    else:
-        logger.warning("FFmpeg missing. Switching to Google Speech Recognition fallback.")
-        import speech_recognition as sr
-        speech_recognizer = sr.Recognizer()
+    import speech_recognition as sr
+    speech_recognizer = sr.Recognizer()
+    logger.info("Google Speech Recognition initialized (Vercel Lite)")
 except Exception as e:
-    logger.error(f"Model load failed: {e}")
-    # Try fallback anyway if import worked
-    try:
-        import speech_recognition as sr
-        speech_recognizer = sr.Recognizer()
-    except:
-        pass
+    logger.error(f"Speech Recognition initialization failed: {e}")
 
 nltk.download('punkt', quiet=True)
 
@@ -192,7 +174,7 @@ async def admin_panel(request: Request):
     
     approved_list = sorted(list(video_index.values()), key=lambda x: x['word'])
     
-    engine_status = "ACTIVE (Whisper)" if whisper_model else "ACTIVE (Google Cloud)" if speech_recognizer else "INACTIVE"
+    engine_status = "ACTIVE (Google Cloud)" if speech_recognizer else "INACTIVE"
     
     return templates.TemplateResponse("admin.html", {
         "request": request,
@@ -371,11 +353,7 @@ async def translate(sentence: str = Form(None), audio: UploadFile = File(None)):
                 # If conversion fails, we fall back to trying the original file
                 pass
             
-            if whisper_model:
-                # Whisper
-                res = whisper_model.transcribe(final_path, fp16=False)
-                text = res["text"].strip()
-            elif speech_recognizer:
+            if speech_recognizer:
                 # Google Speech (Now receives a valid WAV from MoviePy)
                 try:
                     with sr.AudioFile(final_path) as source:
